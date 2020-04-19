@@ -33,7 +33,8 @@ Normally we should be able to run quickly with :
 ```language=sh
 sbt "run localhost 9999"
 ```
-but this seems not to be the proper way to go since we need to use setMaster
+but this seems not to be the proper way to go since we need to use setMaster.
+We could however add arguments and even use src/main/ressources/application.properties, in order to setup dev/pre/pro type of configurations ?
 
 spark-shell is a quick way to run, it can call spark-submit automatically in the sc val, therefore there is no need for SparkContext setup (do not forget to sbt package first) :
 ```
