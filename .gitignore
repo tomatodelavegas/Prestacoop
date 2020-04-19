@@ -1,2 +1,6 @@
 *.class
 *.log
+null
+target
+project
+.idea
