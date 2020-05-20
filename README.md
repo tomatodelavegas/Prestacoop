@@ -26,6 +26,22 @@ Nice already DONE POC for streaming :
 ```language=sh
 bin/run-example streaming.NetworkWordCount localhost 9999
 ```
+### Run docker-compose Kafka
+Open a shell in the directory and run docker-compose:
+```language=sh
+docker-compose up -d 
+```
+This will launch kafka and zookeeper with a demo topic "test".  
+Kafka is accessible at: 
+```language=sh
+localhost:9092
+```
+Therefore to test if kafka is correctly working on your desktop, open two shells, one which will act as producer and the other as consumer:
+```language=sh
+kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test
+kafka-console-producer.sh --broker-list localhost:9092 --topic test
+```
+Then write a few messages in the producer shell and check if they correctly appear in the consumer one.
 
 ### sbt run
 
