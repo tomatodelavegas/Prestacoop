@@ -6,3 +6,5 @@ project
 .idea
 data
 data_checkpoint
+.env
+node_modules
