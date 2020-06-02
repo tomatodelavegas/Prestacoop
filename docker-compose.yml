@@ -1,5 +1,13 @@
 version: '3'
 services:
+    alerter:
+       build: ./alerter
+       ports:
+       - "3005:25"
+       env_file:
+       - ./alerter/.env
+       volumes:
+       - ./alerter:/app
     zookeeper:
        image: wurstmeister/zookeeper
        ports: 
