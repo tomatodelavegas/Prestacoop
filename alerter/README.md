@@ -7,17 +7,7 @@ Prestacoop Alerter is a node.js application which sends emails upon incoming mes
 
 ## Creditentials
 
-change the following variables with true creditentials
-
-```
-export PCOP_MAILER_MAIL="yourmail@gmail.com"
-export PCOP_MAILER_CLIENT_ID="yourclientid"
-export PCOP_MAILER_CLIENT_SECRET="yourclientsecret"
-export PCOP_MAILER_ACCESS_TOKEN="youraccesstoken"
-export PCOP_MAILER_REFRESH_TOKEN="yourrefreshtoken"
-```
-
-NB: we might be considering using dotenv package with .env file
+change the .env_example to .env and fill the contained variables (do not add the filled variables to the repo)
 
 ## Installing
 
@@ -35,5 +25,6 @@ then start publishing messages to the stream
 Built using:
 - kafkajs
 - nodemailer
+- dotenv
 
 (see package.json for more informations)

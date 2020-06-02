@@ -8,3 +8,4 @@ data
 data_checkpoint
 .env
 node_modules
+yarn.lock
