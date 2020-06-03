@@ -2,6 +2,8 @@ package KafkaConnect
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.{DataTypes, StructType}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.streaming.Trigger
 
 object KafkaConnectDF {
   def main(args: Array[String]): Unit = {
@@ -10,13 +12,14 @@ object KafkaConnectDF {
       .master("local[*]")
       .getOrCreate()
 
+    import spark.implicits._
+
     val inputDf = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", "localhost:9092")
       .option("subscribe", "test")
       .load()
 
-    /*
     val testJsonDF = inputDf.selectExpr("CAST(value AS STRING)")
 
     val struct = new StructType()
@@ -30,10 +33,13 @@ object KafkaConnectDF {
       .add("Violation_Time", DataTypes.StringType)
       .add("Violation_County", DataTypes.StringType)
       .add("Registration_State", DataTypes.StringType)
-     */
-    inputDf.writeStream
+
+    val personNestedDf = testJsonDF.select(from_json($"value", struct).as("Drone_Msg"))
+
+    personNestedDf.writeStream
       .outputMode("append")
       .format("console")
+      .trigger(Trigger.ProcessingTime("5 seconds"))
       .start()
       .awaitTermination()
   }
