@@ -7,8 +7,10 @@ import org.apache.spark.streaming.kafka010._
 import org.apache.spark.streaming.kafka010.LocationStrategies.PreferConsistent
 import org.apache.spark.streaming.kafka010.ConsumerStrategies.Subscribe
 import utils.DroneMsg
-
-import scala.util.parsing.json.JSON
+import io.circe.generic.auto._
+import io.circe.syntax._
+import io.circe._
+import io.circe.generic.semiauto._
 
 object KafkaConnect {
   def main(args: Array[String]): Unit = {
@@ -22,7 +24,6 @@ object KafkaConnect {
     val r = scala.util.Random
     // Generate a new Kafka Consumer group id every run
     val groupId = s"stream-checker-v${r.nextInt.toString}"
-
     val kafkaParams = Map[String, Object](
       "bootstrap.servers" -> "localhost:9092",
       "key.deserializer" -> classOf[StringDeserializer],
@@ -41,27 +42,20 @@ object KafkaConnect {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-    //stream.cache()
-    //stream.map(record => (record.value().toString)).print()
-    //stream.print()
 
-    stream.map(record => record.value).foreachRDD(
-      rdd => rdd.foreach(record => println(record))
-    )
+    val messages = stream.map(record => record.value)
+      .map(record => {
+        val decode = parser.decode[DroneMsg](record)
+        decode match {
+          case Right(staff) => staff
+          case Left(error) => None
+        }
+      })
+    messages.foreachRDD(rdd =>{
+      rdd.foreach(drone => println(drone))
+    })
+
     ssc.start()
     ssc.awaitTermination()
-    /*
-    val messages = stream.map(record => record.value())
-      .flatMap(record => {
-        // Deserializing
-        JSON.parseFull(record).map(rawMap => {
-          val map = rawMap.asInstanceOf[Map[String,String]]
-          DroneMsg(map("Issue_Date"), map("Plate_ID"), map.("Violation_Code"),
-            map("Vehicle_Body_Type"), map("Street_Code1"), map("Street_Code2"),
-            map("Street_Code3"), map("Violation_Time"), map("Violation_County"),
-            map("Registration_State"))
-        })
-      })
-     */
   }
 }
