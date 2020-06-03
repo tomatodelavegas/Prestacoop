@@ -8,6 +8,9 @@ services:
        - ./alerter/.env
        volumes:
        - ./alerter:/app
+       depends_on:
+       - "kafka"
+       restart: always # will sometimes fail, if kafka takes too long
     zookeeper:
        image: wurstmeister/zookeeper
        ports: 

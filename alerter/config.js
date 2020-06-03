@@ -1,4 +1,4 @@
-const dotenv = require('dotenv');
+const dotenv = require('dotenv-safe');
 // automatically loading the .env file
 dotenv.config();
 
