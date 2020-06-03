@@ -5,6 +5,8 @@
   "devDependencies": {
     "kafkajs": "1.12.0",
     "nodemailer": "6.4.8",
-    "dotenv-safe": "8.2.0"
+    "preview-email": "2.0.2",
+    "dotenv-safe": "8.2.0",
+    "handlebars": "4.7.6"
   }
 }
