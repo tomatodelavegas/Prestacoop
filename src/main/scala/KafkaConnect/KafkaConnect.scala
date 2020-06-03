@@ -41,11 +41,13 @@ object KafkaConnect {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-    stream.cache()
-    stream.print()
-    stream.foreachRDD(rdd => {
-      rdd.map(record => print(record.value()))
-    })
+    //stream.cache()
+    //stream.map(record => (record.value().toString)).print()
+    //stream.print()
+
+    stream.map(record => record.value).foreachRDD(
+      rdd => rdd.foreach(record => println(record))
+    )
     ssc.start()
     ssc.awaitTermination()
     /*
