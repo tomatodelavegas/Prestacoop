@@ -34,8 +34,7 @@ object Drone {
     val file: BufferedSource = Source.fromFile(filename)
 
     def getDroneMsg(line: String, columnsId: List[Int]): DroneMsg = {
-      val row: Array[String] = line.split(",")
-      // println("Row size: " + row.size)
+      val row: Array[String] = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
 
       val issue_date: String = row(columnsId(0))
       val plate_id: String = row(columnsId(1))
@@ -54,7 +53,7 @@ object Drone {
 
     val columnsId: ListBuffer[Int] = ListBuffer()
     val header: String = file.getLines().toIterable.take(1).toString()
-    val columns: Array[String] = header.split(",")
+    val columns: Array[String] = header.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
     
     for (i <- 0 to columnsName.size - 1)
     {
