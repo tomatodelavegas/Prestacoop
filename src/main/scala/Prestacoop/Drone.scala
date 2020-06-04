@@ -3,6 +3,10 @@ package drone
 import scala.io.{BufferedSource, Source}
 import utils.DroneMsg
 
+import java.util.Properties
+import org.apache.kafka.clients.producer._
+import org.apache.kafka.common.serialization.StringSerializer
+
 import scala.collection.mutable.ListBuffer
 
 // Play-Json
@@ -60,18 +64,22 @@ object Drone {
       columnsId += columns.indexOf(columnsName(i))
     }
 
+    val props: Properties = new Properties()
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
+
+    val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)
+
     for (line <- file.getLines().drop(1))
     {
       val droneMsg: DroneMsg = getDroneMsg(line, columnsId.toList)
       val droneJson = Json.toJson(droneMsg)
-      // println(droneJson)
+      val record = new ProducerRecord[String, String]("test", droneJson.toString())
+      producer.send(record)
     }
     file.close()
+    producer.close()
     println("Done")
   }
-
-  // Get a specific Json column
-  // val plate_id = (droneJson \ "plate_id").as[String]
-  // Pretty print
-  // Json.prettyPrint(droneJson)
 }
