@@ -9,29 +9,12 @@ import org.apache.kafka.common.serialization.StringSerializer
 
 import scala.collection.mutable.ListBuffer
 
-// Play-Json
-// See more on https://github.com/playframework/play-json
-import play.api.libs.json._
+// Circe Json
+import io.circe.generic.auto._
+import io.circe.syntax._
 
 object Drone {
-
   def main(args: Array[String]): Unit = {
-    // Converter for DroneMsg to Json
-    implicit val droneWrites = new Writes[DroneMsg] {
-      def writes(droneMsg: DroneMsg) = Json.obj(
-        "issue_date" -> droneMsg.Issue_Date,
-        "plate_id" -> droneMsg.Plate_ID,
-        "violation_code" -> droneMsg.Violation_Code,
-        "vehicle_body_type" -> droneMsg.Vehicle_Body_Type,
-        "street_code1" -> droneMsg.Street_Code1,
-        "street_code2" -> droneMsg.Street_Code2,
-        "street_code3" -> droneMsg.Street_Code3,
-        "violation_time" -> droneMsg.Violation_Time,
-        "violation_county" -> droneMsg.Violation_County,
-        "registration_state" -> droneMsg.Registration_State
-      )
-    }
-
     val columnsName: Array[String] = Array("Issue Date", "Plate ID", "Violation Code", "Vehicle Body Type", "Street Code1",
     "Street Code2", "Street Code3", "Violation Time", "Violation County", "Registration State")
     val filename: String = "data/Parking_Violations_Issued_-_Fiscal_Year_2017.csv"
@@ -74,7 +57,7 @@ object Drone {
     for (line <- file.getLines().drop(1))
     {
       val droneMsg: DroneMsg = getDroneMsg(line, columnsId.toList)
-      val droneJson = Json.toJson(droneMsg)
+      val droneJson = droneMsg.asJson
       val record = new ProducerRecord[String, String]("test", droneJson.toString())
       producer.send(record)
     }
