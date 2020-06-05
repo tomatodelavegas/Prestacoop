@@ -1,6 +1,6 @@
 package KafkaConnect
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 import org.apache.spark.sql.types.{DataTypes, StructType}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.streaming.Trigger
@@ -36,11 +36,20 @@ object KafkaConnectDF {
 
     val personNestedDf = testJsonDF.select(from_json($"value", struct).as("Drone_Msg"))
 
-    personNestedDf.writeStream
-      .outputMode("append")
-      .format("console")
-      .trigger(Trigger.ProcessingTime("5 seconds"))
-      .start()
-      .awaitTermination()
+    personNestedDf.writeStream.foreachBatch {
+      (batchDF: DataFrame, batchId: Long) =>
+        batchDF.cache()
+
+        val newDf = batchDF.na.drop()
+
+        newDf.write
+          .mode("append")
+          .format("parquet")
+          .option("path", "data")
+          .option("checkpointLocation", "data_checkpoint")
+
+        batchDF.unpersist()
+        batchDF.show()
+    }.trigger(Trigger.ProcessingTime("30 seconds")).start().awaitTermination()
   }
 }

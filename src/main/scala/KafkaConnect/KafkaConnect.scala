@@ -44,7 +44,6 @@ object KafkaConnect {
       Subscribe[String, String](topics, kafkaParams)
     )
 
-
     val messages = stream.map(record => record.value)
       .map(record => {
         val decode = parser.decode[DroneMsg](record)
@@ -53,6 +52,8 @@ object KafkaConnect {
           case Left(error) => None
         }
       }).filter(msg => msg != None).map(value => value.asInstanceOf[DroneMsg])
+
+    messages.cache()
 
     messages.foreachRDD(rdd =>{
       rdd.foreach(drone => println(drone))
@@ -63,7 +64,6 @@ object KafkaConnect {
       df.write
         .mode("append")
         .parquet("data")
-      println("File written!")
     })
 
     ssc.start()
