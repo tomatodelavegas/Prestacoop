@@ -11,6 +11,8 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import io.circe._
 import io.circe.generic.semiauto._
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 object KafkaConnect {
   def main(args: Array[String]): Unit = {
@@ -34,7 +36,7 @@ object KafkaConnect {
     )
 
     val topics = Array("test")
-    val batchInterval = Seconds(5)
+    val batchInterval = Seconds(30)
     val ssc = new StreamingContext(sc, batchInterval)
     val stream = KafkaUtils.createDirectStream[String, String](
       ssc,
@@ -50,9 +52,18 @@ object KafkaConnect {
           case Right(staff) => staff
           case Left(error) => None
         }
-      })
+      }).filter(msg => msg != None).map(value => value.asInstanceOf[DroneMsg])
+
     messages.foreachRDD(rdd =>{
       rdd.foreach(drone => println(drone))
+      val spark =
+        SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()
+      import spark.implicits._
+      val df = rdd.toDF()
+      df.write
+        .mode("append")
+        .parquet("data")
+      println("File written!")
     })
 
     ssc.start()
