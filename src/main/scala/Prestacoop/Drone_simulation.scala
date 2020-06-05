@@ -1,5 +1,6 @@
 package drone_simulation
 
+import java.util.{Timer, TimerTask}
 import scala.io.{BufferedSource, Source}
 import utils.DroneMsg
 
@@ -48,15 +49,21 @@ object Drone_simulation {
                       violation_time, violation_county, registration_state)
     }
 
+    //val timer = new Timer
+    //def delay(f :() => Unit, n: Long) = timer.schedule(new TimerTask() { def run = f() })
     val props: Properties = new Properties()
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, LOCALHOST + ":9092")
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
     val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)
 
+    val rand = scala.util.Random
+
     val data = file.getLines().drop(1)
     data.foreach{ line =>
-      producer.send(new ProducerRecord[String, String]("test", getDroneMsg(line, columnsId.toList).asJson.toString)) }
+      producer.send(new ProducerRecord[String, String]("test", getDroneMsg(line, columnsId.toList).asJson.toString))
+      Thread.sleep((rand.nextFloat()*10000+1).toInt)
+    }
 
     file.close()
     producer.close()
