@@ -59,6 +59,6 @@ object Drone {
 
     file.close()
     producer.close()
-    println("Done")
+    System.err.println("Done")
   }
 }
