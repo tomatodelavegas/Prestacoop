@@ -12,6 +12,7 @@ module.exports = {
         PCOP_MAILER_CLIENT_SECRET, // OAuth2 secret client key
         PCOP_MAILER_ACCESS_TOKEN, // OAuth2 accesstoken
         PCOP_MAILER_REFRESH_TOKEN, // OAuth2 refreshtoken
+        PCOP_MAILER_RECIPIENTS, // Recipients for emails
         PCOP_MAILER_DEBUG, // wether to preview mails or send emails
     } = process.env,
     kafkaConf: {

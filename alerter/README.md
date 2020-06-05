@@ -7,7 +7,7 @@ Prestacoop Alerter is a node.js application which sends emails upon incoming mes
 
 ## Creditentials
 
-change the .env_example to .env and fill the contained variables (do not add the filled variables to the repo)
+COPY .env.example to .env and fill the .env file (do not add the filled variables to the repo)
 
 ## Install + run (no Docker)
 
@@ -70,6 +70,8 @@ fails if the .env file does not provide the same (non empty this time) variables
 Built using:
 - kafkajs
 - nodemailer
+- preview-email
 - dotenv-safe
+- handlebars
 
 (see package.json for more informations)

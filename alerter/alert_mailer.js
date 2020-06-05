@@ -28,7 +28,7 @@ module.exports = {
             let filledhtml = template(data);
             const message = {
                 from: mailerConf.PCOP_MAILER_MAIL, // sender address  
-                to: mailerConf.PCOP_MAILER_MAIL, // list of receivers (comma separated)
+                to: mailerConf.PCOP_MAILER_RECIPIENTS, // list of receivers (comma separated)
                 subject: subject, // Subject line  
                 html: filledhtml, ////text: // this is for plaintext body
                 /**attachments: [{
