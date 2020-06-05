@@ -1,5 +1,6 @@
 package drone
 
+import scala.sys
 import scala.io.{BufferedSource, Source}
 import utils.DroneMsg
 
@@ -48,7 +49,9 @@ object Drone {
     }
 
     val props: Properties = new Properties()
-    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    val kafkahost: String = sys.env.get("KAFKA_HOST_NAME").getOrElse("localhost");
+    System.err.println("using kafka host: " + kafkahost);
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkahost + ":9092");
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
     val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)
