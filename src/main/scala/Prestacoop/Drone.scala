@@ -20,6 +20,15 @@ object Drone {
     val filename: String = "data/Parking_Violations_Issued_-_Fiscal_Year_2017.csv"
     val file: BufferedSource = Source.fromFile(filename)
 
+    val columnsId: ListBuffer[Int] = ListBuffer()
+    val header: String = file.getLines().toIterable.take(1).toString()
+    val columns: Array[String] = header.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
+    
+    for (i <- 0 to columnsName.size - 1)
+    {
+      columnsId += columns.indexOf(columnsName(i))
+    }
+
     def getDroneMsg(line: String, columnsId: List[Int]): DroneMsg = {
       val row: Array[String] = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
 
@@ -38,29 +47,16 @@ object Drone {
                       violation_time, violation_county, registration_state)
     }
 
-    val columnsId: ListBuffer[Int] = ListBuffer()
-    val header: String = file.getLines().toIterable.take(1).toString()
-    val columns: Array[String] = header.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-    
-    for (i <- 0 to columnsName.size - 1)
-    {
-      columnsId += columns.indexOf(columnsName(i))
-    }
-
     val props: Properties = new Properties()
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
-
     val producer: KafkaProducer[String, String] = new KafkaProducer[String, String](props)
 
-    for (line <- file.getLines().drop(1))
-    {
-      val droneMsg: DroneMsg = getDroneMsg(line, columnsId.toList)
-      val droneJson = droneMsg.asJson
-      val record = new ProducerRecord[String, String]("test", droneJson.toString())
-      producer.send(record)
-    }
+    val data = file.getLines().drop(1)
+    data.foreach{ line =>
+      producer.send(new ProducerRecord[String, String]("test", getDroneMsg(line, columnsId.toList).asJson.toString)) }
+
     file.close()
     producer.close()
     println("Done")
