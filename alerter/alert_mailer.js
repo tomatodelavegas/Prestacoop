@@ -10,19 +10,18 @@ let template = Handlebars.compile(fs.readFileSync(path, { encoding: "utf-8", fla
 
 module.exports = {
     sendMail: function (subject, data) {
-        // todo could do this only one time ...
-        var transporter = nodemailer.createTransport({
-            host: mailerConf.PCOP_MAILER_HOST, //"smtp.gmail.com",
-            auth: {
-                type: mailerConf.PCOP_MAILER_TYPE, //"OAuth2",
-                user: mailerConf.PCOP_MAILER_MAIL,
-                clientId: mailerConf.PCOP_MAILER_CLIENT_ID,
-                clientSecret: mailerConf.PCOP_MAILER_CLIENT_SECRET,
-                refreshToken: mailerConf.PCOP_MAILER_REFRESH_TOKEN,
-                accessToken: mailerConf.PCOP_MAILER_ACCESS_TOKEN
-            }
-        });
         if (typeof subject !== 'undefined') {
+            var transporter = nodemailer.createTransport({
+                host: mailerConf.PCOP_MAILER_HOST, //"smtp.gmail.com",
+                auth: {
+                    type: mailerConf.PCOP_MAILER_TYPE, //"OAuth2",
+                    user: mailerConf.PCOP_MAILER_MAIL,
+                    clientId: mailerConf.PCOP_MAILER_CLIENT_ID,
+                    clientSecret: mailerConf.PCOP_MAILER_CLIENT_SECRET,
+                    refreshToken: mailerConf.PCOP_MAILER_REFRESH_TOKEN,
+                    accessToken: mailerConf.PCOP_MAILER_ACCESS_TOKEN
+                }
+            });
             // TODO: replacements is data, rights issue with NYPD logo ?
             data.nypd_logo = "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Patch_of_the_New_York_City_Police_Department.svg/langfr-800px-Patch_of_the_New_York_City_Police_Department.svg.png";//"cid:nypdlogo";
             //data.nypd_logo = __dirname + "\\images\\94941591197037168.png"; // or small : "https://www1.nyc.gov/favicon"
@@ -53,7 +52,7 @@ module.exports = {
                 previewEmail(message).then(console.log).catch(console.error);
             }
         } else {
-            console.log("illegal parameters !");
+            throw new Error("illegal parameters");
         }
     }
 };
