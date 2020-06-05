@@ -22,10 +22,11 @@ Group members:
 
 ## Run
 
-Nice already DONE POC for streaming :
 ```language=sh
-bin/run-example streaming.NetworkWordCount localhost 9999
+$ export KAFKA_HOST_NAME=localhost # or 192.168.99.100
+PS> set KAFKA_HOST_NAME=localhost # or 192.168.99.100
 ```
+
 ### Run docker-compose Kafka
 Open a shell in the directory and run docker-compose:
 ```language=sh
@@ -34,12 +35,21 @@ docker-compose up -d
 This will launch kafka and zookeeper with a demo topic "test".  
 Kafka is accessible at: 
 ```language=sh
-localhost:9092
+${KAFKA_HOST_NAME}:9092
 ```
+Logs are accesible like so:
+```
+docker-compose logs YOUR_SERVICE_NAME # or just logs but barely readable
+```
+You can also acces the machines terminal:
+```
+docker-compose exec YOUR_SERVICE_NAME sh # or some other program
+```
+
 Therefore to test if kafka is correctly working on your desktop, open two shells, one which will act as producer and the other as consumer:
 ```language=sh
-kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test
-kafka-console-producer.sh --broker-list localhost:9092 --topic test
+kafka-console-consumer.sh --bootstrap-server ${KAFKA_HOST_NAME}:9092 --topic test
+kafka-console-producer.sh --broker-list ${KAFKA_HOST_NAME}:9092 --topic test
 ```
 Then write a few messages in the producer shell and check if they correctly appear in the consumer one.
 
@@ -47,17 +57,18 @@ Then write a few messages in the producer shell and check if they correctly appe
 
 Normally we should be able to run quickly with :
 ```language=sh
-sbt "run localhost 9999"
+sbt "run"
 ```
-but this seems not to be the proper way to go since we need to use setMaster.
+
+### A word about Running Standard process
+
+sbt run is not the official way of running since we need to use setMaster.
 We could however add arguments and even use src/main/ressources/application.properties, in order to setup dev/pre/pro type of configurations ?
 
 spark-shell is a quick way to run, it can call spark-submit automatically in the sc val, therefore there is no need for SparkContext setup (do not forget to sbt package first) :
 ```
 "${SPARK_HOME}"/bin/spark-shell --master local[4] --jars "target/scala-2.12/prestacoop_2.12-1.0.jar"
 ```
-
-### Standard process
 
 package app into .jar:
 ```language=sh
@@ -67,16 +78,4 @@ sbt package
 call spark-submit for our project to run with all the wanted parameters:
 ```language=sh
 ./submit.sh
-```
-
-start the spark history webserver in order to view what happens after submitting:
-```language=sh
-"${SPARK_HOME}"/sbin/start-history-server.sh
-```
-
-## Test
-
-once app is running use netcat like so:
-```language=sh
-echo "hello world" > nc -k -lvp 9999
 ```
