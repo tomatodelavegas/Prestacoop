@@ -35,7 +35,7 @@ const run = async () => {
                 value: message.value.toString(),
             });
             // TODO: use Promise JSON.parse(message.value.toString())
-            mailer.sendMail("New Alert !", { droneid: "142e1fa1", messageid: "1", statuscode: -1 }, false);
+            mailer.sendMail("New Alert !", { droneid: "142e1fa1", messageid: "1", statuscode: -1 });
         },
     })
 }
