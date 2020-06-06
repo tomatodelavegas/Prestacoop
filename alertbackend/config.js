@@ -10,8 +10,7 @@ module.exports = {
         PCOP_MONGO_PWD // password
     } = process.env,
     serverConf: {
-        PCOP_BACKEND_HOST_NAME, // nodocker: localhost
-        PCOP_BACKEND_PORT // 80
+        PCOP_BACKEND_HOST_NAME // nodocker: localhost, otherwise maybe 192.168.99.100
     } = process.env,
     kafkaConf: {
         PCOP_KAFKA_HOST_NAME, // 192.168.99.100 or localhost

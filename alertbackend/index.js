@@ -119,8 +119,8 @@ app.get("/:id", async function (req, res) {
 });
 
 /** Backend server running **/
-var server = app.listen(serverConf.PCOP_BACKEND_PORT, serverConf.PCOP_BACKEND_HOST_NAME, function () {
-    console.log(`Server running http://${serverConf.PCOP_BACKEND_HOST_NAME}:${serverConf.PCOP_BACKEND_PORT}`);
+var server = app.listen("3000", serverConf.PCOP_BACKEND_HOST_NAME, function () {
+    console.log(`Server running http://${serverConf.PCOP_BACKEND_HOST_NAME}:3000`);
 });
 
 /** websocket **/
