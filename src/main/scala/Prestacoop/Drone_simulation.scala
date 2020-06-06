@@ -1,6 +1,6 @@
 package drone_simulation
 
-import scala.sys
+
 import scala.io.{BufferedSource, Source}
 import utils.DroneMsg
 
@@ -18,9 +18,8 @@ object Drone_simulation {
   def main(args: Array[String]): Unit = {
     val columnsName: Array[String] = Array("Issue Date", "Plate ID", "Violation Code", "Vehicle Body Type", "Street Code1",
     "Street Code2", "Street Code3", "Violation Time", "Violation County", "Registration State")
-    val filename: String = "data/drone_scenario.csv"
+    val filename: String = "data/drone_simulation.csv"
     val file: BufferedSource = Source.fromFile(filename)
-    val LOCALHOST = "192.168.99.100"
 
     val columnsId: ListBuffer[Int] = ListBuffer()
     val header: String = file.getLines().toIterable.take(1).toString()
@@ -36,7 +35,7 @@ object Drone_simulation {
 
       val issue_date: String = row(columnsId(0))
       val plate_id: String = row(columnsId(1))
-      val violation_code: Byte = row(columnsId(2)).toByte
+      val violation_code: Int = row(columnsId(2)).toInt
       val vehicle_body_type: String = row(columnsId(3))
       val street_code1: Int = row(columnsId(4)).toInt
       val street_code2: Int = row(columnsId(5)).toInt
@@ -62,8 +61,11 @@ object Drone_simulation {
 
     val data = file.getLines().drop(1)
     data.foreach{ line =>
-      producer.send(new ProducerRecord[String, String]("test", getDroneMsg(line, columnsId.toList).asJson.toString))
-      Thread.sleep((rand.nextFloat()*20000).toInt)
+      if (getDroneMsg(line, columnsId.toList).Violation_Code == -1) //send into alert stream
+        producer.send(new ProducerRecord[String, String]("alert", getDroneMsg(line, columnsId.toList).asJson.toString))
+      else
+        producer.send(new ProducerRecord[String, String]("test", getDroneMsg(line, columnsId.toList).asJson.toString))
+      Thread.sleep((rand.nextFloat()*10000).toInt)
     }
 
     file.close()
