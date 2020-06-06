@@ -1,5 +1,39 @@
-version: '3'
+version: '3.1'
 services:
+    mongo:
+        image: mongo:latest
+        hostname: ${KAFKA_HOST_NAME}
+        restart: always
+        #environment:
+            #MONGO_INITDB_DATABASE: alertdb
+            #MONGO_INITDB_ROOT_USERNAME: root
+            #MONGO_INITDB_ROOT_PASSWORD: rootpwd
+            #MONGO_INITDB_DATABASE: alertdb
+            #${MONGO_INITDB_DATABASE}
+            #${MONGO_INITDB_ROOT_USERNAME}
+            #${MONGO_INITDB_ROOT_PASSWORD}
+            #MONGO_DATABASE: ${MONGO_INITDB_DATABASE}
+            #MONGO_NON_ROOT_USERNAME: LT.User1
+            #MONGO_NON_ROOT_PASSWORD: PoliceOffice
+            #MONGO_INITDB_ROOT_USERNAME: root
+            #MONGO_INITDB_ROOT_PASSWORD: example
+        #env_file:
+        #- .env # FIXME
+        volumes:
+        - ./alerter/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        - ./data:/data/db
+        ports:
+        - 27017-27019:27017-27019
+    mongo-express:
+        image: mongo-express
+        restart: always
+        hostname: ${KAFKA_HOST_NAME}
+        ports:
+        - 8081:8081
+        environment:
+            ME_CONFIG_MONGODB_SERVER: ${KAFKA_HOST_NAME}
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: example
     alerter:
        build: ./alerter
        ports:

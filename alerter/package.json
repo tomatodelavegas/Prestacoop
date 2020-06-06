@@ -7,6 +7,9 @@
     "nodemailer": "6.4.8",
     "preview-email": "2.0.2",
     "dotenv-safe": "8.2.0",
-    "handlebars": "4.7.6"
+    "handlebars": "4.7.6",
+    "express": "4.17.1",
+    "mongodb": "3.5.8",
+    "socket.io": "2.3.0"
   }
 }
