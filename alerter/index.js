@@ -1,14 +1,22 @@
 const socketio = require("socket.io");
 const express = require("express");
 const assert = require("assert");
+const { Kafka } = require('kafkajs');
 const { MongoClient, ObjectId } = require('mongodb');
-let app = express();
 
-// server setup with express JS
-
+/** Express server **/
 let hostname = "localhost";
 let port = 80;
+let app = express();
 
+/** kafka **/
+const kafka = new Kafka({
+    clientId: 'backendalerter',
+    brokers: ["192.168.99.100" + ':9092'] // kafkaConf.PCOP_KAFKA_HOST_NAME
+});
+const consumer = kafka.consumer({ groupId: 'test-group' });
+
+/**
 let alerts = [
     {
         id: 0,
@@ -36,45 +44,31 @@ let alerts = [
         Violation_County: "NY",
         Registration_State: "NY"
     }
-];
-
-/**
-let server = http.createServer((req, res) => {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "text/plain");
-    res.end("Hello World !\n");
-});
-
-server.listen(port, hostname, () => {
-    console.log(`Server running http://${hostname}:${port}`);
-});**/
+];**/
 
 // socket io
 
-let socket = socketio.listen(server);
-let broadcaster;
-
-socket.on('connection', function (client) {
-    client.on('message', function (event) {
-        console.log('Received message from client!', event);
-    });
-    //broadcaster = setInterval(() => emitToClient(client), 1000);
-    client.on('disconnect', function () {
-        //clearInterval(broadcaster);
-        console.log('Client has disconnected');
-    });
-});
-
-broadcaster = setInterval(() => {
+const sendNotif = () => {
     const datenow = new Date().toLocaleString('en-GB');
     const msg = `New alert (${datenow}) !`;
     console.log("Emitting to clients !");
     socket.sockets.emit("FromAPI", msg);
-    //sckt.emit("FromAPI", msg);//clients); // .broadcast to broadcast to all clients
-    //socket.broadcast.emit("FromAPI", msg);
-}, 5000);
+}
+
+const addAlert = async (alert) => {
+    const client = await MongoClient.connect(mongourl);
+    if (client == null)
+        return res.status(500).send("Failed to connect to database");
+    console.log("Connected successfully to mongodb");
+    const db = client.db(mongodbname);
+    const alertsColection = db.collection("alerts");
+    alertsColection.insertOne(alert);
+    client.close();
+    sendNotif(); // informs frontend of the new alert
+};
 
 // mongo setup
+
 // TODO: dotenv package
 const mongohostname = "192.168.99.100";
 const mongoport = "27017";
@@ -85,22 +79,6 @@ const mongodbname = "alertdb";
 let mongourl = `mongodb://${mongousername}:${mongopwd}@${mongohostname}:${mongoport}/${mongodbname}`;
 
 console.log(mongourl);
-
-/**
-MongoClient.connect(mongourl, function (err, client) {
-    assert.equal(null, err);
-    console.log("Connected successfully to mongodb");
-
-    const db = client.db(mongodbname);
-    const alertsColection = db.collection("alerts");
-
-    alertsColection.insertOne(alerts[0]);
-
-    //db.close();
-
-    client.close();
-});
-**/
 
 
 /**
@@ -148,6 +126,53 @@ app.get("/:id", async function (req, res) {
     }
 });
 
+/** Backend server running **/
 var server = app.listen(port, hostname, function () {
     console.log(`Server running http://${hostname}:${port}`);
 });
+
+/** websocket **/
+let socket = socketio.listen(server);//, { origins: "localhost:3000", transports: ["websocket"], allowUpgrades: false });
+
+socket.on('connection', function (client) {
+    client.on('message', function (event) {
+        console.log('Received message from client!', event);
+    });
+    //broadcaster = setInterval(() => emitToClient(client), 1000);
+    client.on('disconnect', function () {
+        //clearInterval(broadcaster);
+        console.log('Client has disconnected');
+    });
+});
+
+/** Kafka setup **/
+
+const PJsonParse = (json) => {
+    return new Promise((resolve, reject) => {
+        try {
+            resolve(JSON.parse(json))
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+const run = async () => {
+    // Consuming
+    await consumer.connect()
+    await consumer.subscribe({ topic: "test", fromBeginning: true }) // kafkaConf.PCOP_KAFKA_ALERT_TOPIC
+
+    await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            console.log({
+                topic,
+                partition,
+                offset: message.offset,
+                value: message.value.toString(),
+            });
+            PJsonParse(message.value.toString()).then(json => {
+                addAlert(json);
+            }).catch(err => console.error(err))
+        },
+    })
+}
+run().catch(console.error)
