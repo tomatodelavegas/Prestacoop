@@ -38,7 +38,7 @@ object KafkaConnect {
       "enable.auto.commit" -> (false: java.lang.Boolean)
     )
 
-    val topics = Array("test")
+    val topics = Array("general", "alert")
     val batchInterval = Seconds(30)
     val ssc = new StreamingContext(sc, batchInterval)
     val stream = KafkaUtils.createDirectStream[String, String](
