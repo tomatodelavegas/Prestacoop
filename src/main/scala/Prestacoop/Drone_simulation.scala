@@ -64,8 +64,8 @@ object Drone_simulation {
       if (getDroneMsg(line, columnsId.toList).Violation_Code == -1) //send into alert stream
         producer.send(new ProducerRecord[String, String]("alert", getDroneMsg(line, columnsId.toList).asJson.toString))
       else
-        producer.send(new ProducerRecord[String, String]("test", getDroneMsg(line, columnsId.toList).asJson.toString))
-      Thread.sleep((rand.nextFloat()*10000).toInt)
+        producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId.toList).asJson.toString))
+      Thread.sleep((rand.nextFloat()*100).toInt)
     }
 
     file.close()
