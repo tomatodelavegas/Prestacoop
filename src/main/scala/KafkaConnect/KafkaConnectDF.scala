@@ -19,7 +19,7 @@ object KafkaConnectDF {
     val inputDf = spark.readStream
       .format("kafka")
       .option("kafka.bootstrap.servers", kafkaHost)
-      .option("subscribe", "test")
+      .option("subscribe", "general,alert")
       .load()
 
     val testJsonDF = inputDf.selectExpr("CAST(value AS STRING)")

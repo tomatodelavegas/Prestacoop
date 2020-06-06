@@ -58,7 +58,7 @@ object Drone {
 
     val data = file.getLines().drop(1)
     data.foreach{ line =>
-      producer.send(new ProducerRecord[String, String]("test", getDroneMsg(line, columnsId.toList).asJson.toString)) }
+      producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId.toList).asJson.toString)) }
 
     file.close()
     producer.close()
