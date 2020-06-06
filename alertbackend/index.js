@@ -1,20 +1,19 @@
 const socketio = require("socket.io");
 const express = require("express");
 const assert = require("assert");
+const { mongoConf, serverConf, kafkaConf } = require("./config");
 const { Kafka } = require('kafkajs');
 const { MongoClient, ObjectId } = require('mongodb');
 
 /** Express server **/
-let hostname = "localhost";
-let port = 80;
 let app = express();
 
 /** kafka **/
 const kafka = new Kafka({
     clientId: 'backendalerter',
-    brokers: ["192.168.99.100" + ':9092'] // kafkaConf.PCOP_KAFKA_HOST_NAME
+    brokers: [kafkaConf.PCOP_KAFKA_HOST_NAME + ':9092']
 });
-const consumer = kafka.consumer({ groupId: 'test-group' });
+const consumer = kafka.consumer({ groupId: 'backend-group' });
 
 /**
 let alerts = [
@@ -68,16 +67,9 @@ const addAlert = async (alert) => {
 };
 
 // mongo setup
-
-// TODO: dotenv package
-const mongohostname = "192.168.99.100";
-const mongoport = "27017";
-const mongousername = "LT.User1";
-const mongopwd = "PoliceOffice";
 const mongodbname = "alertdb";
 
-let mongourl = `mongodb://${mongousername}:${mongopwd}@${mongohostname}:${mongoport}/${mongodbname}`;
-
+let mongourl = `mongodb://${mongoConf.PCOP_MONGO_USERNAME}:${mongoConf.PCOP_MONGO_PWD}@${mongoConf.PCOP_MONGO_HOST_NAME}:${mongoConf.PCOP_MONGO_PORT}/${mongodbname}`;
 console.log(mongourl);
 
 
@@ -127,8 +119,8 @@ app.get("/:id", async function (req, res) {
 });
 
 /** Backend server running **/
-var server = app.listen(port, hostname, function () {
-    console.log(`Server running http://${hostname}:${port}`);
+var server = app.listen(serverConf.PCOP_BACKEND_PORT, serverConf.PCOP_BACKEND_HOST_NAME, function () {
+    console.log(`Server running http://${serverConf.PCOP_BACKEND_HOST_NAME}:${serverConf.PCOP_BACKEND_PORT}`);
 });
 
 /** websocket **/
@@ -159,7 +151,7 @@ const PJsonParse = (json) => {
 const run = async () => {
     // Consuming
     await consumer.connect()
-    await consumer.subscribe({ topic: "test", fromBeginning: true }) // kafkaConf.PCOP_KAFKA_ALERT_TOPIC
+    await consumer.subscribe({ topic: kafkaConf.PCOP_KAFKA_ALERT_TOPIC, fromBeginning: true }) // kafkaConf.PCOP_KAFKA_ALERT_TOPIC
 
     await consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
