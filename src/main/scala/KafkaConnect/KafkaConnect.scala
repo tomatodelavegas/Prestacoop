@@ -26,8 +26,11 @@ object KafkaConnect {
     val r = scala.util.Random
     // Generate a new Kafka Consumer group id every run
     val groupId = s"stream-checker-v${r.nextInt.toString}"
+
+    val kafkaHost: String = sys.env.getOrElse("KAFKA_HOST_NAME", "localhost") + ":9092";
+
     val kafkaParams = Map[String, Object](
-      "bootstrap.servers" -> "localhost:9092",
+      "bootstrap.servers" -> kafkaHost,
       "key.deserializer" -> classOf[StringDeserializer],
       "value.deserializer" -> classOf[StringDeserializer],
       "group.id" -> groupId,
@@ -56,7 +59,8 @@ object KafkaConnect {
     messages.cache()
 
     messages.foreachRDD(rdd =>{
-      rdd.foreach(drone => println(drone))
+      rdd.foreach(drone => println(drone)) // FIXME
+      
       val spark =
         SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()
       import spark.implicits._

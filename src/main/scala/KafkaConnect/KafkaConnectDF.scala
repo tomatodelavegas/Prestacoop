@@ -14,9 +14,11 @@ object KafkaConnectDF {
 
     import spark.implicits._
 
+    val kafkaHost: String = sys.env.getOrElse("KAFKA_HOST_NAME", "localhost") + ":9092";
+
     val inputDf = spark.readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
+      .option("kafka.bootstrap.servers", kafkaHost)
       .option("subscribe", "test")
       .load()
 
