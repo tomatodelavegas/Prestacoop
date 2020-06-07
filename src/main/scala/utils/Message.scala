@@ -16,6 +16,7 @@ Registration State
 **/
 
 case class DroneMsg (
+    Drone_ID: Int,
     Issue_Date: String, // maybe more advanced Date java/scala type
     Plate_ID: String, // GGY6450 is a license plate
     Violation_Code: Int, // [-1,99]

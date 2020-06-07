@@ -2,6 +2,7 @@ package drone
 
 import scala.io.{BufferedSource, Source}
 import utils.DroneMsg
+import java.io.File
 
 import java.util.Properties
 import org.apache.kafka.clients.producer._
@@ -24,7 +25,7 @@ object Drone {
     new KafkaProducer[String, String](props)
   }
 
-  def getDroneMsg(line: String, columnsId: Array[Int]): DroneMsg = {
+  def getDroneMsg(id: Int, line: String, columnsId: Array[Int]): DroneMsg = {
     val row: Array[String] = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
 
     val issue_date: String = row(columnsId(0))
@@ -40,7 +41,7 @@ object Drone {
     val vehicle_color: String = row(columnsId(10))
     val vehicle_maker: String = row(columnsId(11))
 
-    DroneMsg(issue_date, plate_id, violation_code, vehicle_body_type, street_code1, street_code2, street_code3,
+    DroneMsg(id, issue_date, plate_id, violation_code, vehicle_body_type, street_code1, street_code2, street_code3,
       violation_time, violation_county, registration_state, vehicle_color, vehicle_maker)
   }
 
@@ -55,19 +56,36 @@ object Drone {
     columnsId
   }
 
+  def getListOfFiles(dir: String): List[File] = {
+    val d = new File(dir)
+    if (d.exists && d.isDirectory)
+      d.listFiles.filter(file => file.isFile && file.getName.endsWith(".csv")).toList
+    else if (d.isFile)
+      List[File](d)
+    else
+      List[File]()
+  }
+
   def main(args: Array[String]): Unit = {
-    val filename: String = "data/Parking_Violations_Issued_-_Fiscal_Year_2017.csv"
-    val file: BufferedSource = Source.fromFile(filename)
-    val columnsId: Array[Int] = getColumns(file)
+    if (args.length == 0)
+      System.err.println("No files or directory given")
+    else {
+      val filenames: List[File] = getListOfFiles(args(0))
 
-    val producer: KafkaProducer[String, String] = getDefaultKafkaProducer
+      val producer: KafkaProducer[String, String] = getDefaultKafkaProducer
 
-    val data = file.getLines().drop(1)
-    data.foreach{ line =>
-      producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId).asJson.toString)) }
+      filenames.foreach{ filename =>
+        val file: BufferedSource = Source.fromFile(filename)
+        val columnsId: Array[Int] = getColumns(file)
+        file.getLines().drop(1).foreach{ line =>
+          val rand = scala.util.Random
+          producer.send(new ProducerRecord[String, String]("general", getDroneMsg(rand.nextInt(20000), line, columnsId).asJson.toString)) }
+        file.close()
+        System.err.println(filename + " loaded")
+      }
 
-    file.close()
-    producer.close()
-    System.err.println("Done")
+      producer.close()
+      System.err.println("Load finished")
+    }
   }
 }
