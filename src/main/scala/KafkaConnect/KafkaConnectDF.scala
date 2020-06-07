@@ -47,7 +47,7 @@ object KafkaConnectDF {
         newDf.write
           .mode("append")
           .format("parquet")
-          .option("path", "data")
+          .option("path", "data/parquet")
           .option("checkpointLocation", "data_checkpoint")
 
         batchDF.unpersist()

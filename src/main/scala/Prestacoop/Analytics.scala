@@ -14,7 +14,7 @@ object Analytics {
       .appName("Testing")
       .getOrCreate()
 
-    val df = spark.read.parquet("data/test.parquet")
+    val df = spark.read.parquet("data/parquet")
 
     def worstNeighbor(df : sql.DataFrame)
     {

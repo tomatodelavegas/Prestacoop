@@ -67,7 +67,7 @@ object KafkaConnect {
       val df = rdd.toDF()
       df.write
         .mode("append")
-        .parquet("data")
+        .parquet("data/parquet")
     })
 
     ssc.start()
