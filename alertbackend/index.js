@@ -1,49 +1,9 @@
 "use strict";
 const socketio = require("socket.io");
 const express = require("express");
-//const assert = require("assert");
 const { serverConf, kafkaConf } = require("./config");
 const { Kafka } = require('kafkajs');
-const { sqlConf } = require("./config");
-var mysql = require('mysql');
-
-const sqldbname = "prestacoop";
-//const sqlurl = sqlConf.PCOP_SQL_HOST_NAME + ":" + sqlConf.PCOP_SQL_PORT;
-const sqlurl = "mysql_db";
-console.log(sqlurl);
-
-var connection = mysql.createConnection({
-    host: sqlurl,
-    user: sqlConf.PCOP_SQL_USERNAME,
-    password: sqlConf.PCOP_SQL_PWD,
-    database: sqldbname
-});
-
-connection.connect((err) => {
-    if (err)
-        throw err;
-    console.log("Connected to mysql");
-});
-
-const querydb = (query) => {
-    return new Promise((resolve, reject) => {
-        connection.query(query, (err, results) => {
-            if (err)
-                return reject(err);
-            return resolve(results);
-        });
-    });
-}
-
-
-/**
-const objToLower = (obj) => {
-    obj.map((a) => {
-        a.key2 = a.key2.toLowerCase();
-        return a;
-    });
-    return obj;
-};**/
+const querydb = require("./sqlconnection");
 
 /** Express server **/
 let app = express();
@@ -55,41 +15,9 @@ const kafka = new Kafka({
 });
 const consumer = kafka.consumer({ groupId: 'backend-group' });
 
-/**
-let alerts = [
-    {
-        id: 0,
-        Issue_Date: "04/06/2020",
-        Plate_ID: "GGY6450",
-        Violation_Code: -1,
-        Vehicle_Body_Type: "SUBN",
-        Street_Code1: 20390,
-        Street_Code2: 29890,
-        Street_Code3: 31490,
-        Violation_Time: "0800A",
-        Violation_County: "NY",
-        Registration_State: "NY"
-    },
-    {
-        id: 1,
-        Issue_Date: "04/06/2020",
-        Plate_ID: "GGY6450",
-        Violation_Code: -1,
-        Vehicle_Body_Type: "SUBN",
-        Street_Code1: 20390,
-        Street_Code2: 29890,
-        Street_Code3: 31490,
-        Violation_Time: "0805A",
-        Violation_County: "NY",
-        Registration_State: "NY"
-    }
-];**/
-
 // socket io
 
 const sendNotif = (msg) => {
-    //const datenow = new Date().toLocaleString('en-GB');
-    //const msg = `New alert (${datenow}) !`;
     console.log("Emitting to clients !");
     socket.sockets.emit("FromAPI", msg);
 }
@@ -104,8 +32,10 @@ const addAlert = async (msg) => {
     });
 };
 
+/** express **/
+
 /**
- **
+ ** OK (empty JSON if not exists)
  **/
 app.get("/msglist/:offset/:count", async function (req, res) {
     let offset = req.params.offset;
@@ -118,7 +48,7 @@ app.get("/msglist/:offset/:count", async function (req, res) {
 });
 
 /**
- ** Get alerts list, OK
+ ** Get alerts list, OK (empty JSON if none)
  **/
 app.get("/msgcount/", async function (req, res) {
     await querydb("SELECT count(*) FROM drone_messages").catch(err => {
@@ -190,3 +120,34 @@ const run = async () => {
     })
 }
 run().catch(console.error)
+
+
+/**
+let alerts = [
+    {
+        id: 0,
+        Issue_Date: "04/06/2020",
+        Plate_ID: "GGY6450",
+        Violation_Code: -1,
+        Vehicle_Body_Type: "SUBN",
+        Street_Code1: 20390,
+        Street_Code2: 29890,
+        Street_Code3: 31490,
+        Violation_Time: "0800A",
+        Violation_County: "NY",
+        Registration_State: "NY"
+    },
+    {
+        id: 1,
+        Issue_Date: "04/06/2020",
+        Plate_ID: "GGY6450",
+        Violation_Code: -1,
+        Vehicle_Body_Type: "SUBN",
+        Street_Code1: 20390,
+        Street_Code2: 29890,
+        Street_Code3: 31490,
+        Violation_Time: "0805A",
+        Violation_County: "NY",
+        Registration_State: "NY"
+    }
+];**/
