@@ -27,6 +27,20 @@ object Analytics {
         .show()
     }
 
+    def mostFrequentInfraction(df : sql.DataFrame)
+    {
+      """
+      21 => parking forbidden
+      36 => speeding
+      38 => no parking ticket
+      """
+      df.groupBy("Violation_Code")
+        .count().withColumnRenamed("count", "Count")
+        .orderBy(desc("count"))
+        .limit(10)
+        .show()
+    }
+
     def worstType(df : sql.DataFrame)
     {
       df.groupBy("Vehicle_Body_Type")
@@ -46,28 +60,30 @@ object Analytics {
 
     def worstColor(df : sql.DataFrame)
     {
-      var res = df.withColumn("True Color",
+      val total = df.select("Vehicle_Color").count()
+
+      df.withColumn("True Color",
         when((col("Vehicle_Color").contains('G') && col("Vehicle_Color").contains("Y")) || col("Vehicle_Color").contains("SILVE"), "Grey")
           .when(col("Vehicle_Color").contains('W') && col("Vehicle_Color").contains("H"), "White")
           .when(col("Vehicle_Color").contains('B') && col("Vehicle_Color").contains("K"), "Black")
           .when(col("Vehicle_Color").contains('R') && col("Vehicle_Color").contains("D"), "Red")
           .when(col("Vehicle_Color").contains('B') && col("Vehicle_Color").contains("L"), "Blue")
           .when(col("Vehicle_Color").contains('B') && col("Vehicle_Color").contains("R"), "Brown")
-          .when(col("Vehicle_Color").contains('Y') && col("Vehicle_Color").contains("W"), "Yellow")
-          .otherwise("Other"))
+          .when(col("Vehicle_Color").contains('Y') && (col("Vehicle_Color").contains("L") || col("Vehicle_Color").contains("W")), "Yellow")
+          .otherwise("Other")).select("True Color")
         .groupBy("True Color")
         .count()
         .orderBy(desc("count"))
-
-      res.withColumn("NYC Reference",
-        when(col("True Color").contains("Grey"), "28%")
-        .when(col("True Color").contains("White"), "19%")
-        .when(col("True Color").contains("Black"), "20%")
-        .when(col("True Color").contains("Red"), "10%")
-        .when(col("True Color").contains("Blue"), "12%")
-        .when(col("True Color").contains("Brown"), "1.5%")
-        .when(col("True Color").contains("Yellow"), "1%")
-        .otherwise("8.5%"))
+        .select(col("True Color"), round(col("count")*100/total, 1).alias("Color %"))
+        .withColumn("NYC Reference",
+        when(col("True Color").contains("Grey"), "27.3%%")
+        .when(col("True Color").contains("White"), "19.2%%")
+        .when(col("True Color").contains("Black"), "20.5%")
+        .when(col("True Color").contains("Red"), "10.2%")
+        .when(col("True Color").contains("Blue"), "11.9%")
+        .when(col("True Color").contains("Brown"), "3.8%")
+        .when(col("True Color").contains("Yellow"), "0.9%")
+        .otherwise("6.2%"))
         .show()
 
       //In NYC we have:
@@ -91,7 +107,7 @@ object Analytics {
           .when(col("Violation_Time").contains("04") && col("Violation_Time").contains("P"), "16h")
           .when(col("Violation_Time").contains("05") && col("Violation_Time").contains("P"), "17h")
           .when(col("Violation_Time").contains("P"), "18h - 24h")
-          .otherwise("Other")).groupBy("Time")
+          .otherwise("Other")).groupBy("Vehicle_Color")
         .count().withColumnRenamed("count", "Count")
         .orderBy(asc("Time"))
         .show()
@@ -111,8 +127,8 @@ object Analytics {
         .groupBy(col("Street_Code3"))
         .count()
 
-      street1.join(street2, street2.col("Street_Code2") === street1.col("Street_Code1"), "cross")
-        .join(street3, street3.col("Street_Code3") === street1.col("Street_Code1"), "cross")
+      street1.join(street2, street2.col("Street_Code2") === street1.col("Street_Code1"), "full")
+        .join(street3, street3.col("Street_Code3") === street1.col("Street_Code1"), "full")
         .select(col("Street_Code1").alias("Street_Code"),
           (street1.col("count") + street2.col("count") + street3.col("count"))
             .alias("Total violation"))
