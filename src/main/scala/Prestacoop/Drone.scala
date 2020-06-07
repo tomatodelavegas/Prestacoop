@@ -24,7 +24,7 @@ object Drone {
     new KafkaProducer[String, String](props)
   }
 
-  def getDroneMsg(line: String, columnsId: Array[Int]): DroneMsg = {
+  def getDroneMsg(id: Int, line: String, columnsId: Array[Int]): DroneMsg = {
     val row: Array[String] = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
 
     val issue_date: String = row(columnsId(0))
@@ -40,8 +40,8 @@ object Drone {
     val vehicle_color: String = row(columnsId(10))
     val vehicle_maker: String = row(columnsId(11))
 
-    DroneMsg(issue_date, plate_id, violation_code, vehicle_body_type, street_code1, street_code2, street_code3,
-      violation_time, violation_county, registration_state, vehicle_color, vehicle_maker)
+    DroneMsg(id, issue_date, plate_id, violation_code, vehicle_body_type, street_code1, street_code2, street_code3,
+      violation_time, violation_county, registration_state, vehicle_color)
   }
 
   def getColumns(file: BufferedSource):  Array[Int] = {
@@ -56,7 +56,7 @@ object Drone {
   }
 
   def main(args: Array[String]): Unit = {
-    val filename: String = "data/Parking_Violations_Issued_-_Fiscal_Year_2017.csv"
+    val filename: String = "data/NYPD_2017_10000.csv"
     val file: BufferedSource = Source.fromFile(filename)
     val columnsId: Array[Int] = getColumns(file)
 
@@ -64,7 +64,8 @@ object Drone {
 
     val data = file.getLines().drop(1)
     data.foreach{ line =>
-      producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId).asJson.toString)) }
+      val rand = scala.util.Random
+      producer.send(new ProducerRecord[String, String]("general", getDroneMsg(rand.nextInt(20000), line, columnsId).asJson.toString)) }
 
     file.close()
     producer.close()
