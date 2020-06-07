@@ -36,6 +36,45 @@ object Analytics {
         .show()
     }
 
+    def worstMaker(df : sql.DataFrame)
+    {
+      df.groupBy("Vehicle_Maker")
+        .count().withColumnRenamed("count", "Count")
+        .orderBy(desc("count"))
+        .show()
+    }
+
+    def worstColor(df : sql.DataFrame)
+    {
+      var res = df.withColumn("True Color",
+        when((col("Vehicle_Color").contains('G') && col("Vehicle_Color").contains("Y")) || col("Vehicle_Color").contains("SILVE"), "Grey")
+          .when(col("Vehicle_Color").contains('W') && col("Vehicle_Color").contains("H"), "White")
+          .when(col("Vehicle_Color").contains('B') && col("Vehicle_Color").contains("K"), "Black")
+          .when(col("Vehicle_Color").contains('R') && col("Vehicle_Color").contains("D"), "Red")
+          .when(col("Vehicle_Color").contains('B') && col("Vehicle_Color").contains("L"), "Blue")
+          .when(col("Vehicle_Color").contains('B') && col("Vehicle_Color").contains("R"), "Brown")
+          .when(col("Vehicle_Color").contains('Y') && col("Vehicle_Color").contains("W"), "Yellow")
+          .otherwise("Other"))
+        .groupBy("True Color")
+        .count()
+        .orderBy(desc("count"))
+
+      res.withColumn("NYC Reference",
+        when(col("True Color").contains("Grey"), "28%")
+        .when(col("True Color").contains("White"), "19%")
+        .when(col("True Color").contains("Black"), "20%")
+        .when(col("True Color").contains("Red"), "10%")
+        .when(col("True Color").contains("Blue"), "12%")
+        .when(col("True Color").contains("Brown"), "1.5%")
+        .when(col("True Color").contains("Yellow"), "1%")
+        .otherwise("8.5%"))
+        .show()
+
+      //In NYC we have:
+      //Black 20%, White 19%, Gray 28%, Blue 12%, Red 10%, Brown 1.5%, Yellow 1%
+      //source https://data.ny.gov/Transportation/Vehicle-Colors-Most-Popular-in-New-York-State/dye7-8du4
+    }
+
     def worstMoment(df : sql.DataFrame)
     {
       df.withColumn("Time",
@@ -82,6 +121,6 @@ object Analytics {
         .show()
     }
 
-    mostDangerousStreet(df)
+    worstColor(df)
   }
 }
