@@ -20,6 +20,12 @@ Group members:
 - Download & install "scala 2.12.10" and "sbt 1.3.4"
 - set SPARK_HOME env variable to the spark-2.4.5-bin-hadoop2.7 folder location
 
+## Ressources
+
+File needed for the drone simulation: **drone_simulation.csv**  
+Link to the ressource (an epita account is **required**):
+[drone_simulation.csv sharepoint](https://epitafr-my.sharepoint.com/:x:/r/personal/guillaume_blassel_epita_fr/Documents/SCALA/drone_simulation.csv?d=w4727eabdde26415d983f0f7d1a26a6ac&csf=1&web=1&e=MJiXPy)
+
 ## Run
 
 ```language=sh
