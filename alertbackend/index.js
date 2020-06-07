@@ -120,34 +120,3 @@ const run = async () => {
     })
 }
 run().catch(console.error)
-
-
-/**
-let alerts = [
-    {
-        id: 0,
-        Issue_Date: "04/06/2020",
-        Plate_ID: "GGY6450",
-        Violation_Code: -1,
-        Vehicle_Body_Type: "SUBN",
-        Street_Code1: 20390,
-        Street_Code2: 29890,
-        Street_Code3: 31490,
-        Violation_Time: "0800A",
-        Violation_County: "NY",
-        Registration_State: "NY"
-    },
-    {
-        id: 1,
-        Issue_Date: "04/06/2020",
-        Plate_ID: "GGY6450",
-        Violation_Code: -1,
-        Vehicle_Body_Type: "SUBN",
-        Street_Code1: 20390,
-        Street_Code2: 29890,
-        Street_Code3: 31490,
-        Violation_Time: "0805A",
-        Violation_County: "NY",
-        Registration_State: "NY"
-    }
-];**/
