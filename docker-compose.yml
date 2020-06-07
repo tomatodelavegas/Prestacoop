@@ -2,14 +2,16 @@ version: '3.1'
 services:
     mysql_db:
       image: mysql:latest
+      volumes:
+        - ./mysql_db_data_container:/var/lib/mysql
+        - ./mysql_db_init/:/docker-entrypoint-initdb.d/
       command: --default-authentication-plugin=mysql_native_password
       environment:
-        MYSQL_ROOT_PASSWORD: rootpassword
+        MYSQL_ROOT_PASSWORD: rootpwd
+        MYSQL_DATABASE: prestacoop
       ports:
         - 3306:3306
-      volumes:
-        - mysql_db_data_container:/var/lib/mysql
-    adminer_container:
+    adminer:
       image: adminer:latest
       environment:
         ADMINER_DEFAULT_SERVER: mysql_db
@@ -73,7 +75,7 @@ services:
        restart: always
     zookeeper:
        image: wurstmeister/zookeeper
-       ports: 
+       ports:
         - "2181"
     kafka:
         image: wurstmeister/kafka
@@ -83,5 +85,5 @@ services:
             KAFKA_ADVERTISED_HOST_NAME: localhost
             KAFKA_CREATE_TOPICS: "general:1:1,alert:1:1"
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        depends_on: 
+        depends_on:
             - zookeeper
