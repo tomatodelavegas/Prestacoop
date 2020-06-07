@@ -7,8 +7,6 @@ import java.util.Properties
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.serialization.StringSerializer
 
-import scala.collection.mutable.ListBuffer
-
 // Circe Json
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -26,7 +24,7 @@ object Drone {
     new KafkaProducer[String, String](props)
   }
 
-  def getDroneMsg(line: String, columnsId: List[Int]): DroneMsg = {
+  def getDroneMsg(line: String, columnsId: Array[Int]): DroneMsg = {
     val row: Array[String] = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
 
     val issue_date: String = row(columnsId(0))
@@ -51,24 +49,21 @@ object Drone {
     val filename: String = "data/Parking_Violations_Issued_-_Fiscal_Year_2017.csv"
     val file: BufferedSource = Source.fromFile(filename)
 
-    val columnsId: ListBuffer[Int] = ListBuffer()
+    val columnsId: Array[Int] = new Array[Int](columnsName.size)
     val header: String = file.getLines().toIterable.take(1).toString()
     val columns: Array[String] = header.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-    
-    for (i <- 0 to columnsName.size - 1)
-    {
-      columnsId += columns.indexOf(columnsName(i))
-    }
+
+    (0 to columnsName.size - 1).foreach{ i  => columnsId(i) = columns.indexOf(columnsName(i)) }
+
 
     val producer: KafkaProducer[String, String] = getDefaultKafkaProducer
 
     val data = file.getLines().drop(1)
     data.foreach{ line =>
-      producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId.toList).asJson.toString)) }
+      producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId).asJson.toString)) }
 
     file.close()
     producer.close()
     System.err.println("Done")
   }
-
 }
