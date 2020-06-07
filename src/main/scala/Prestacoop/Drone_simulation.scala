@@ -10,19 +10,10 @@ import io.circe.syntax._
 
 object Drone_simulation {
   def main(args: Array[String]): Unit = {
-    val columnsName: Array[String] = Array("Issue Date", "Plate ID", "Violation Code", "Vehicle Body Type", "Street Code1",
-    "Street Code2", "Street Code3", "Violation Time", "Violation County", "Registration State", "Vehicle Color")
     val filename: String = "data/drone_simulation.csv"
     val file: BufferedSource = Source.fromFile(filename)
 
-    val columnsId: ListBuffer[Int] = ListBuffer()
-    val header: String = file.getLines().toIterable.take(1).toString()
-    val columns: Array[String] = header.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-    
-    for (i <- 0 to columnsName.size - 1)
-    {
-      columnsId += columns.indexOf(columnsName(i))
-    }
+    val columnsId: Array[Int] = getColumns(file)
 
     val producer: KafkaProducer[String, String] = getDefaultKafkaProducer
 
@@ -30,10 +21,10 @@ object Drone_simulation {
 
     val data = file.getLines().drop(1)
     data.foreach{ line =>
-      if (getDroneMsg(line, columnsId.toList).Violation_Code == -1) //send into alert stream
-        producer.send(new ProducerRecord[String, String]("alert", getDroneMsg(line, columnsId.toList).asJson.toString))
+      if (getDroneMsg(line, columnsId).Violation_Code == -1) //send into alert stream
+        producer.send(new ProducerRecord[String, String]("alert", getDroneMsg(line, columnsId).asJson.toString))
       else
-        producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId.toList).asJson.toString))
+        producer.send(new ProducerRecord[String, String]("general", getDroneMsg(line, columnsId).asJson.toString))
       Thread.sleep((rand.nextFloat()*100).toInt)
     }
 

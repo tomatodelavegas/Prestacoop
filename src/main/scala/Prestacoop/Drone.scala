@@ -43,18 +43,21 @@ object Drone {
       violation_time, violation_county, registration_state, vehicle_color)
   }
 
-  def main(args: Array[String]): Unit = {
+  def getColumns(file: BufferedSource):  Array[Int] = {
     val columnsName: Array[String] = Array("Issue Date", "Plate ID", "Violation Code", "Vehicle Body Type", "Street Code1",
-    "Street Code2", "Street Code3", "Violation Time", "Violation County", "Registration State", "Vehicle Color")
-    val filename: String = "data/Parking_Violations_Issued_-_Fiscal_Year_2017.csv"
-    val file: BufferedSource = Source.fromFile(filename)
+      "Street Code2", "Street Code3", "Violation Time", "Violation County", "Registration State", "Vehicle Color")
 
-    val columnsId: Array[Int] = new Array[Int](columnsName.size)
+    val columnsId: Array[Int] = new Array[Int](columnsName.length)
     val header: String = file.getLines().toIterable.take(1).toString()
     val columns: Array[String] = header.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
+    columnsName.indices.foreach{ i  => columnsId(i) = columns.indexOf(columnsName(i)) }
+    columnsId
+  }
 
-    (0 to columnsName.size - 1).foreach{ i  => columnsId(i) = columns.indexOf(columnsName(i)) }
-
+  def main(args: Array[String]): Unit = {
+    val filename: String = "data/Parking_Violations_Issued_-_Fiscal_Year_2017.csv"
+    val file: BufferedSource = Source.fromFile(filename)
+    val columnsId: Array[Int] = getColumns(file)
 
     val producer: KafkaProducer[String, String] = getDefaultKafkaProducer
 
