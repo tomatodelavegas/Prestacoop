@@ -26,5 +26,6 @@ case class DroneMsg (
     Violation_Time: String, // 0800A is 8 AM
     Violation_County: String, // NY is NewYork
     Registration_State: String, // 67+ states since including canada and others
-    Vehicle_Color: String // Color eg: "red"
+    Vehicle_Color: String, //color of the vehicle
+    Vehicle_Maker: String //vehicle brand
 );

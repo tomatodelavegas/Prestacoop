@@ -38,14 +38,15 @@ object Drone {
     val violation_county: String = row(columnsId(8))
     val registration_state: String = row(columnsId(9))
     val vehicle_color: String = row(columnsId(10))
+    val vehicle_maker: String = row(columnsId(11))
 
     DroneMsg(issue_date, plate_id, violation_code, vehicle_body_type, street_code1, street_code2, street_code3,
-      violation_time, violation_county, registration_state, vehicle_color)
+      violation_time, violation_county, registration_state, vehicle_color, vehicle_maker)
   }
 
   def getColumns(file: BufferedSource):  Array[Int] = {
     val columnsName: Array[String] = Array("Issue Date", "Plate ID", "Violation Code", "Vehicle Body Type", "Street Code1",
-      "Street Code2", "Street Code3", "Violation Time", "Violation County", "Registration State", "Vehicle Color")
+      "Street Code2", "Street Code3", "Violation Time", "Violation County", "Registration State", "Vehicle Color", "Vehicle Make")
 
     val columnsId: Array[Int] = new Array[Int](columnsName.length)
     val header: String = file.getLines().toIterable.take(1).toString()
