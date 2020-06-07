@@ -18,12 +18,13 @@ Registration State
 case class DroneMsg (
     Issue_Date: String, // maybe more advanced Date java/scala type
     Plate_ID: String, // GGY6450 is a license plate
-    Violation_Code: Byte, // [0,99]
+    Violation_Code: Int, // [-1,99]
     Vehicle_Body_Type: String,
     Street_Code1: Int, // [0,98K]
     Street_Code2: Int, // [0,98K]
     Street_Code3: Int, // [0,98K]
     Violation_Time: String, // 0800A is 8 AM
     Violation_County: String, // NY is NewYork
-    Registration_State: String // 67+ states since including canada and others
+    Registration_State: String, // 67+ states since including canada and others
+    Vehicle_Color: String // Color eg: "red"
 );
