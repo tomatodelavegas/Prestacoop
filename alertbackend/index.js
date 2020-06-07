@@ -1,9 +1,49 @@
+"use strict";
 const socketio = require("socket.io");
 const express = require("express");
-const assert = require("assert");
-const { mongoConf, serverConf, kafkaConf } = require("./config");
+//const assert = require("assert");
+const { serverConf, kafkaConf } = require("./config");
 const { Kafka } = require('kafkajs');
-const { MongoClient, ObjectId } = require('mongodb');
+const { sqlConf } = require("./config");
+var mysql = require('mysql');
+
+const sqldbname = "prestacoop";
+//const sqlurl = sqlConf.PCOP_SQL_HOST_NAME + ":" + sqlConf.PCOP_SQL_PORT;
+const sqlurl = "mysql_db";
+console.log(sqlurl);
+
+var connection = mysql.createConnection({
+    host: sqlurl,
+    user: sqlConf.PCOP_SQL_USERNAME,
+    password: sqlConf.PCOP_SQL_PWD,
+    database: sqldbname
+});
+
+connection.connect((err) => {
+    if (err)
+        throw err;
+    console.log("Connected to mysql");
+});
+
+const querydb = (query) => {
+    return new Promise((resolve, reject) => {
+        connection.query(query, (err, results) => {
+            if (err)
+                return reject(err);
+            return resolve(results);
+        });
+    });
+}
+
+
+/**
+const objToLower = (obj) => {
+    obj.map((a) => {
+        a.key2 = a.key2.toLowerCase();
+        return a;
+    });
+    return obj;
+};**/
 
 /** Express server **/
 let app = express();
@@ -47,75 +87,57 @@ let alerts = [
 
 // socket io
 
-const sendNotif = () => {
-    const datenow = new Date().toLocaleString('en-GB');
-    const msg = `New alert (${datenow}) !`;
+const sendNotif = (msg) => {
+    //const datenow = new Date().toLocaleString('en-GB');
+    //const msg = `New alert (${datenow}) !`;
     console.log("Emitting to clients !");
     socket.sockets.emit("FromAPI", msg);
 }
 
-const addAlert = async (alert) => {
-    const client = await MongoClient.connect(mongourl);
-    if (client == null)
-        return res.status(500).send("Failed to connect to database");
-    console.log("Connected successfully to mongodb");
-    const db = client.db(mongodbname);
-    const alertsColection = db.collection("alerts");
-    alertsColection.insertOne(alert);
-    client.close();
-    sendNotif(); // informs frontend of the new alert
+const addAlert = async (msg) => {
+    await querydb(`INSERT INTO drone_messages (Issue_Date,Plate_ID,Violation_Code,Vehicle_Body_Type,Street_Code1,Street_Code2,Street_Code3,Violation_Time,Violation_County,Registration_State) VALUES (
+        ${msg.Issue_Date},${msg.Plate_ID},${msg.Violation_Code},${msg.Vehicle_Body_Type},${msg.Street_Code1},${msg.Street_Code2},${msg.Street_Code3}
+        ${msg.Violation_Time},${msg.Violation_County},${msg.Registration_State})`).catch(err => {
+        console.error(err);
+    }).then(results => {
+        sendNotif(msg);
+    });
 };
 
-// mongo setup
-const mongodbname = "alertdb";
-
-let mongourl = `mongodb://${mongoConf.PCOP_MONGO_USERNAME}:${mongoConf.PCOP_MONGO_PWD}@${mongoConf.PCOP_MONGO_HOST_NAME}:${mongoConf.PCOP_MONGO_PORT}/${mongodbname}`;
-console.log(mongourl);
-
-
 /**
- ** Get all alerts
+ **
  **/
-app.get("/", function (req, res) {
-    let resArr = [];
-    MongoClient.connect(mongourl, function (err, client) {
-        assert.equal(null, err);
-        const db = client.db(mongodbname);
-        const alertsColection = db.collection("alerts");
-        let cursor = alertsColection.find();
-        cursor.forEach((doc, err) => {
-            assert.equal(null, err);
-            resArr.push(doc);
-        }, () => {
-            client.close();
-            res.send(resArr);
-        });
+app.get("/msglist/:offset/:count", async function (req, res) {
+    let offset = req.params.offset;
+    let count = req.params.count;
+    await querydb(`SELECT * FROM drone_messages LIMIT ${offset},${count}`).catch(err => {
+        res.status(500).send(err);
+    }).then(results => {
+        res.send(results);
     });
 });
 
 /**
- ** Getting a specific alert by id
+ ** Get alerts list, OK
  **/
-app.get("/:id", async function (req, res) {
+app.get("/msgcount/", async function (req, res) {
+    await querydb("SELECT count(*) FROM drone_messages").catch(err => {
+        res.status(500).send(err);
+    }).then(results => {
+        res.send(results);
+    });
+});
+
+/**
+ ** Getting a specific alert by id, OK (empty JSON if not exists)
+ **/
+app.get("/msg/:id", async function (req, res) {
     let id = req.params.id; // TODO: string -> int conversion checking
-    try {
-        let o_id = new ObjectId(id);
-        const client = await MongoClient.connect(mongourl).catch(err => res.status(500).send(err));
-        if (client == null)
-            return res.status(500).send("Failed to connect to database");
-        const db = client.db(mongodbname);
-        const alertsColection = db.collection("alerts");
-        const elm = await alertsColection.findOne({ _id: o_id }).catch(err => res.status(500).send(err));
-        if (typeof client !== "undefined" && client)
-            client.close();
-        if (elm == null)
-            return res.status(500).send(`No such element _id: ${id}`);
-        res.send(elm);
-    } catch (err) {
-        if (typeof client !== "undefined" && client)
-            client.close();
-        res.status(500).send(`No such element _id: ${id}`);
-    }
+    await querydb(`SELECT * FROM drone_messages WHERE id=${id}`).catch(err => {
+        res.status(500).send(err);
+    }).then(results => {
+        res.send(results);
+    });
 });
 
 /** Backend server running **/
