@@ -3,10 +3,14 @@ const socketio = require("socket.io");
 const express = require("express");
 const { serverConf, kafkaConf } = require("./config");
 const { Kafka } = require('kafkajs');
+var cors = require('cors');
 const querydb = require("./sqlconnection");
 
 /** Express server **/
 let app = express();
+app.use(cors({
+    origin: '*' // TODO: specific CORS
+}));
 
 /** kafka **/
 const kafka = new Kafka({
@@ -66,7 +70,10 @@ app.get("/msg/:id", async function (req, res) {
     await querydb(`SELECT * FROM drone_messages WHERE id=${id}`).catch(err => {
         res.status(500).send(err);
     }).then(results => {
-        res.send(results);
+        if (results.length > 0)
+            res.send(results[0]);
+        else
+            res.send({});
     });
 });
 
