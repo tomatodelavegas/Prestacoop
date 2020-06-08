@@ -38,6 +38,7 @@ Run spark and scala components:
 - Drone: NYC dataset import, nyc file needed or csv folder needed; Give the path in argument  
 - Drone_simulation: Simulate drones, simulation file from 'ressources' needed.  
 - Analytics: Analyse data saved in parquet thanks to KafkaConnect, can only be run once data has already been written.
+- create a folder called "mysql_db_data_container/" (empty folders cannot be added to the git)
 
 ## Run
 
@@ -46,8 +47,8 @@ Run spark and scala components:
 **This variable should be your local ip !**
 
 ```language=sh
-$ export KAFKA_HOST_NAME=(local_ipv4) # or 192.168.99.100 or localhost (not assured to work)
-PS> set KAFKA_HOST_NAME=(local_ipv4) # or 192.168.99.100 or localhost (not assured to work)
+$ export KAFKA_HOST_NAME=(local_ipv4) # or 192.168.99.100 or localhost
+PS> set KAFKA_HOST_NAME=(local_ipv4) # or 192.168.99.100 or localhost
 ```
 
 ### Using Docker-Toolbox
@@ -67,8 +68,37 @@ Windows or linux non Docker-Toolboox users should use **KAFKA_HOST_NAME** for do
 ### Run docker-compose Kafka
 Open a shell in the directory and run docker-compose:
 ```language=sh
-docker-compose up -d 
+docker-compose build alerter # for emails
+docker-compose build alertbackend # requires alertfrontend
+docker-compose build alertfrontend # requires alertbackend
 ```
+
+#### Launch only the mailer:
+```
+docker-compose up -d kafka alerter # launches alerter, kafka and zookeeper
+```
+
+#### Launch only the alert website (front + back + mysql):
+```
+docker-compose up -d kafka mysql_db adminer alertfrontend alertbackend # launches mysql_db alertfrontend backend, kafka and zookeeper
+```
+
+#### Launch everything (**high memory cost, 8GB may not be enough if wanting to use multiple sbt run alongside all components**):
+```
+docker-compose up -d
+```
+
+##### Troubleshooting mysql
+
+```
+docker-compose exec mysql sh
+$ mysql -u root -p prestacoop
+> Enter password:
+## copy paste  mysql_db_init/prestacoop.sql content
+```
+
+#### Miscellaneous
+
 This will launch kafka and zookeeper with a demo topic "test".  
 Kafka is accessible at: 
 ```language=sh
