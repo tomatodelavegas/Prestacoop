@@ -21,16 +21,23 @@ const consumer = kafka.consumer({ groupId: 'backend-group' });
 
 // socket io
 
-const sendNotif = (msg) => {
+const sendNotif = () => {
     console.log("Emitting to clients !");
-    socket.sockets.emit("FromAPI", msg);
-}
-
-const addAlert = async (msg) => {
-    await querydb(`INSERT INTO drone_messages (Issue_Date,Plate_ID,Violation_Code,Vehicle_Body_Type,Street_Code1,Street_Code2,Street_Code3,Violation_Time,Violation_County,Registration_State) VALUES ('${msg.Issue_Date}','${msg.Plate_ID}','${msg.Violation_Code}','${msg.Vehicle_Body_Type}','${msg.Street_Code1}','${msg.Street_Code2}','${msg.Street_Code3}','${msg.Violation_Time}','${msg.Violation_County}','${msg.Registration_State}')`).catch(err => {
+    querydb("SELECT count(*) FROM drone_messages").catch(err => {
         console.error(err);
     }).then(results => {
-        sendNotif(msg);
+        if (results.length > 0)
+            socket.sockets.emit("FromAPI", results);
+        else
+            console.error("Inserted but no data !");
+    });
+}
+
+const addAlert = (msg) => {
+    querydb(`INSERT INTO drone_messages (Issue_Date,Plate_ID,Violation_Code,Vehicle_Body_Type,Street_Code1,Street_Code2,Street_Code3,Violation_Time,Violation_County,Registration_State) VALUES ('${msg.Issue_Date}','${msg.Plate_ID}','${msg.Violation_Code}','${msg.Vehicle_Body_Type}','${msg.Street_Code1}','${msg.Street_Code2}','${msg.Street_Code3}','${msg.Violation_Time}','${msg.Violation_County}','${msg.Registration_State}')`).catch(err => {
+        console.error(err);
+    }).then(results => {
+        sendNotif();
     });
 };
 
