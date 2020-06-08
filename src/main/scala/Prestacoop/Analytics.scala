@@ -18,7 +18,6 @@ object Analytics {
 
     def worstNeighbor(df : sql.DataFrame)
     {
-      System.out.println("The top 10 worst neighbors is officially:")
       df.where(df("Registration_State") =!= "NY")
         .groupBy("Registration_State")
         .count().withColumnRenamed("count", "Count")
@@ -29,21 +28,12 @@ object Analytics {
 
     def mostFrequentInfraction(df : sql.DataFrame)
     {
-      """
+      /*
       21 => parking forbidden
       36 => speeding
       38 => no parking ticket
-      """
+      */
       df.groupBy("Violation_Code")
-        .count().withColumnRenamed("count", "Count")
-        .orderBy(desc("count"))
-        .limit(10)
-        .show()
-    }
-
-    def worstType(df : sql.DataFrame)
-    {
-      df.groupBy("Vehicle_Body_Type")
         .count().withColumnRenamed("count", "Count")
         .orderBy(desc("count"))
         .limit(10)
@@ -55,6 +45,7 @@ object Analytics {
       df.groupBy("Vehicle_Maker")
         .count().withColumnRenamed("count", "Count")
         .orderBy(desc("count"))
+        .limit(10)
         .show()
     }
 
@@ -76,19 +67,21 @@ object Analytics {
         .orderBy(desc("count"))
         .select(col("True Color"), round(col("count")*100/total, 1).alias("Color %"))
         .withColumn("NYC Reference",
-        when(col("True Color").contains("Grey"), "27.3%%")
-        .when(col("True Color").contains("White"), "19.2%%")
-        .when(col("True Color").contains("Black"), "20.5%")
-        .when(col("True Color").contains("Red"), "10.2%")
-        .when(col("True Color").contains("Blue"), "11.9%")
-        .when(col("True Color").contains("Brown"), "3.8%")
-        .when(col("True Color").contains("Yellow"), "0.9%")
-        .otherwise("6.2%"))
+          when(col("True Color").contains("Grey"), "27.3%")
+            .when(col("True Color").contains("White"), "19.2%")
+            .when(col("True Color").contains("Black"), "20.5%")
+            .when(col("True Color").contains("Red"), "10.2%")
+            .when(col("True Color").contains("Blue"), "11.9%")
+            .when(col("True Color").contains("Brown"), "3.8%")
+            .when(col("True Color").contains("Yellow"), "0.9%")
+            .otherwise("6.2%"))
         .show()
 
-      //In NYC we have:
-      //Black 20%, White 19%, Gray 28%, Blue 12%, Red 10%, Brown 1.5%, Yellow 1%
-      //source https://data.ny.gov/Transportation/Vehicle-Colors-Most-Popular-in-New-York-State/dye7-8du4
+      /*
+      In NYC we have:
+      Black 20%, White 19%, Gray 28%, Blue 12%, Red 10%, Brown 1.5%, Yellow 1%
+      source https://data.ny.gov/Transportation/Vehicle-Colors-Most-Popular-in-New-York-State/dye7-8du4
+       */
     }
 
     def worstMoment(df : sql.DataFrame)
@@ -107,7 +100,7 @@ object Analytics {
           .when(col("Violation_Time").contains("04") && col("Violation_Time").contains("P"), "16h")
           .when(col("Violation_Time").contains("05") && col("Violation_Time").contains("P"), "17h")
           .when(col("Violation_Time").contains("P"), "18h - 24h")
-          .otherwise("Other")).groupBy("Vehicle_Color")
+          .otherwise("Other")).groupBy("Time")
         .count().withColumnRenamed("count", "Count")
         .orderBy(asc("Time"))
         .show()
@@ -137,6 +130,12 @@ object Analytics {
         .show()
     }
 
+    worstNeighbor(df)
+    mostFrequentInfraction(df)
+    worstMaker(df)
     worstColor(df)
+    worstMoment(df)
+    mostDangerousStreet(df)
+
   }
 }
