@@ -59,7 +59,7 @@ object KafkaConnect {
     messages.cache()
 
     messages.foreachRDD(rdd =>{
-      rdd.foreach(drone => println(drone)) // FIXME
+      rdd.foreach(drone => println(drone))
       
       val spark =
         SparkSession.builder.config(rdd.sparkContext.getConf).getOrCreate()

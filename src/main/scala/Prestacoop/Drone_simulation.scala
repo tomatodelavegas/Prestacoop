@@ -26,7 +26,7 @@ object Drone_simulation {
         producer.send(new ProducerRecord[String, String]("alert", getDroneMsg(rand_ID, line, columnsId).asJson.toString))
       else
         producer.send(new ProducerRecord[String, String]("general", getDroneMsg(rand_ID, line, columnsId).asJson.toString))
-      Thread.sleep((rand.nextFloat()*10000).toInt)
+      Thread.sleep((rand.nextFloat()*100).toInt)
     }
 
     file.close()
