@@ -38,6 +38,17 @@ Run spark and scala components:
 - Analytics: Analyse data saved in parquet thanks to KafkaConnect, can only be run once data has already been written.
 - create a folder called "mysql_db_data_container/" (empty folders cannot be added to the git)
 
+## BONUSES
+
+### Dockerized BONUSES
+
+- backend in nodejs connected to mysql server using socket.io (longpooling/websocket) for notifications upon new alerts on alert kafka stream (alertbackend folder and docker component image name).
+- frontend connected to the backend in ReactJS (alertfrontend folder and docker component image name).
+
+### Non-Dockerized BONUSES
+
+- 3 more analytics functions, 7 in total
+
 ## Run
 
 **Our app requires your to set the KAFKA_HOST_NAME environment variable (needed by dockerized components as well as drone simulator).**
