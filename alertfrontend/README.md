@@ -1,5 +1,23 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Dockerized version
+
+- depending on your Docker setup (hostmachine), you may need to change the const host variables inside src/config.js before going further (localhost or local ip for docker-toolbox users), the port and host variables correspond to your alertbackend server
+THEN run :
+```
+docker image build -t alertfrontend .
+docker run -it alertfrontend bash
+```
+
+## Docker composed version
+
+- depending on your Docker setup (hostmachine), you may need to change the const host variables inside src/config.js before going further (localhost or local ip for docker-toolbox users), the port and host variables correspond to your alertbackend server
+THEN run :
+```
+docker-compose build alertfrontend
+docker-compose up -d alertfrontend
+```
+
 ## Available Scripts
 
 In the project directory, you can run:

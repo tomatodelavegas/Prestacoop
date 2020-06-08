@@ -1,5 +1,12 @@
 version: '3.1'
 services:
+    alertfrontend:
+      container_name: alertfrontend
+      build:
+        context: ./alertfrontend/
+        dockerfile: ./Dockerfile
+      ports:
+        - '1337:80'
     mysql_db:
       image: mysql:latest
       volumes:
@@ -83,7 +90,7 @@ services:
         ports:
             - "9092:9092"
         environment:
-            KAFKA_ADVERTISED_HOST_NAME: localhost
+            KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_HOST_NAME}
             KAFKA_CREATE_TOPICS: "general:1:1,alert:1:1"
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
         depends_on:

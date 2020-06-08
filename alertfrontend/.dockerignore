@@ -4,9 +4,10 @@ null
 target
 project
 .idea
-data
-data_checkpoint
 .env
 node_modules
 yarn.lock
-build
+node_modules
+Dockerfile
+.dockerignore
+.git
