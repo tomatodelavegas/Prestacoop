@@ -34,10 +34,10 @@ Launch kafka and website alerter:
 > docker-compose up -d
 ```
 Run spark and scala components:
-- KafkaConnect/KafkaConnectDF: Links the kafka to the storage component, KafkaConnectDF should be faster.
+- KafkaConnect: Links the kafka to the storage component.
 - Drone: NYC dataset import, nyc file needed or csv folder needed; Give the path in argument  
 - Drone_simulation: Simulate drones, simulation file from 'ressources' needed.  
-- Analytics: Analyse data saved in parquet thanks to KafkaConnect(DF), can only be run once data has already been written.
+- Analytics: Analyse data saved in parquet thanks to KafkaConnect, can only be run once data has already been written.
 
 ## Run
 
