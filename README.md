@@ -15,12 +15,29 @@ Group members:
 - Download & install "scala 2.12.10" and "sbt 1.3.4"
 - set SPARK_HOME env variable to the spark-2.4.5-bin-hadoop2.7 folder location
 - Download docker for your machine (**be sure to know your local docker-machine ip**, it will be required later)
+- "winutils.exe" might be needed to run spark content on windows: 
+[winutils](https://github.com/cdarlint/winutils)
 
 ## Ressources
 
 File needed for the drone simulation: **drone_simulation.csv**  
+Place the file in **'data/'**  
 Link to the ressource (an epita account is **required**):
-[drone_simulation.csv sharepoint](https://epitafr-my.sharepoint.com/:x:/r/personal/guillaume_blassel_epita_fr/Documents/SCALA/drone_simulation.csv?d=w4727eabdde26415d983f0f7d1a26a6ac&csf=1&web=1&e=MJiXPy)
+[drone_simulation.csv sharepoint](https://epitafr-my.sharepoint.com/:x:/r/personal/guillaume_blassel_epita_fr/Documents/SCALA/drone_simulation.csv?d=w4727eabdde26415d983f0f7d1a26a6ac&csf=1&web=1&e=MJiXPy)  
+File needed for the drone import of NYPD dataset;  
+Place the file in **'data/'**   
+Link to the ressource: [NYPD Kaggle](https://www.kaggle.com/new-york-city/nyc-parking-tickets)
+
+## Quickstart
+Launch kafka and website alerter:
+```
+> docker-compose up -d
+```
+Run spark and scala components:
+- KafkaConnect: Links the kafka to the storage component.
+- Drone: NYC dataset import, nyc file needed or csv folder needed; Give the path in argument  
+- Drone_simulation: Simulate drones, simulation file from 'ressources' needed.  
+- Analytics: Analyse data saved in parquet thanks to KafkaConnect, can only be run once data has already been written.
 
 ## Run
 
@@ -29,8 +46,8 @@ Link to the ressource (an epita account is **required**):
 **This variable should be your local ip !**
 
 ```language=sh
-$ export KAFKA_HOST_NAME=192.168.99.100
-PS> set KAFKA_HOST_NAME=192.168.99.100
+$ export KAFKA_HOST_NAME=(local_ipv4) # or 192.168.99.100 or localhost (not assured to work)
+PS> set KAFKA_HOST_NAME=(local_ipv4) # or 192.168.99.100 or localhost (not assured to work)
 ```
 
 ### Using Docker-Toolbox
