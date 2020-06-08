@@ -66,6 +66,11 @@ Normally we should be able to run quickly with :
 sbt "run"
 ```
 
+For the Drone component, we must run sbt with a file or directory path :
+```langaguage=sh
+sbt "run data/nypd"
+```
+
 ### A word about Running Standard process
 
 sbt run is not the official way of running since we need to use setMaster.
