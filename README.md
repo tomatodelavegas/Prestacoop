@@ -90,6 +90,8 @@ docker-compose up -d
 
 ##### Troubleshooting mysql
 
+access localhost or **KAFKA_HOST_NAME** and port 8080, use password... to view adminer db (see alertbackend/.env.example sql configs alongside docker-compose).
+
 ```
 docker-compose exec mysql sh
 $ mysql -u root -p prestacoop
