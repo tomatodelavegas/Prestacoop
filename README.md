@@ -29,10 +29,8 @@ Place the file in **'data/'**
 Link to the ressource: [NYPD Kaggle](https://www.kaggle.com/new-york-city/nyc-parking-tickets)
 
 ## Quickstart
-Launch kafka and website alerter:
-```
-> docker-compose up -d
-```
+
+See below to choose your combination of docker components to be started, then:
 Run spark and scala components:
 - KafkaConnect: Links the kafka to the storage component.
 - Drone: NYC dataset import, nyc file needed or csv folder needed; Give the path in argument  
@@ -65,7 +63,8 @@ Windows or linux non Docker-Toolboox users should use **KAFKA_HOST_NAME** for do
 - **Copy alerterbackend/.env.example to alerterbackend/.env and fill the values**.
 - **Modify the host variable inside alertfrontend/src/config.js host variable**.
 
-### Run docker-compose Kafka
+### Docker Components
+
 Open a shell in the directory and run docker-compose:
 ```language=sh
 docker-compose build alerter # for emails
