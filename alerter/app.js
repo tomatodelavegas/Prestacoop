@@ -5,23 +5,21 @@ const { kafkaConf } = require("./config");
 const kafka = new Kafka({
     clientId: 'nodemailer',
     brokers: [kafkaConf.PCOP_KAFKA_HOST_NAME + ':9092']
-})
+});
 
-const producer = kafka.producer()
-const consumer = kafka.consumer({ groupId: 'test-group' })
+const consumer = kafka.consumer({ groupId: 'alerter' });
+
+const PJsonParse = (json) => {
+    return new Promise((resolve, reject) => {
+        try {
+            resolve(JSON.parse(json))
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
 
 const run = async () => {
-    /**
-    // Producing
-    await producer.connect()
-    await producer.send({
-        topic: 'test',
-        messages: [
-            { value: 'Hello KafkaJS user!' },
-        ],
-    });
-    **/
-
     // Consuming
     await consumer.connect()
     await consumer.subscribe({ topic: kafkaConf.PCOP_KAFKA_ALERT_TOPIC, fromBeginning: true })
@@ -34,10 +32,25 @@ const run = async () => {
                 offset: message.offset,
                 value: message.value.toString(),
             });
-            // TODO: use Promise JSON.parse(message.value.toString())
-            mailer.sendMail("New Alert !", { droneid: "142e1fa1", messageid: "1", statuscode: -1 });
+            PJsonParse(message.value.toString()).then(json => {
+                let temp = {
+                    droneid: "default",
+                    issuedate: "01/01/2020",
+                    statuscode: -1
+                }
+                if (json.hasOwnProperty("Drone_ID")) {
+                    temp.droneid = json.Drone_ID;
+                }
+                if (json.hasOwnProperty("Violation_Code")) {
+                    temp.statuscode = json.Violation_Code;
+                }
+                if (json.hasOwnProperty("Issue_Date")) {
+                    temp.issuedate = json.Issue_Date;
+                }
+                mailer.sendMail(`New Alert from ${temp.droneid}`, temp);
+            }).catch(err => console.error(err));
         },
     })
 }
 
-run().catch(console.error)
+run().catch(console.error);
