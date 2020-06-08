@@ -1,5 +1,64 @@
-version: '3'
+version: '3.1'
 services:
+    alertfrontend:
+      container_name: alertfrontend
+      build:
+        context: ./alertfrontend/
+        dockerfile: ./Dockerfile
+      ports:
+        - '1337:80'
+    mysql_db:
+      image: mysql:latest
+      volumes:
+        - ./mysql_db_data_container:/var/lib/mysql
+        - ./mysql_db_init/:/docker-entrypoint-initdb.d/
+      command: --default-authentication-plugin=mysql_native_password
+      environment:
+        MYSQL_ROOT_PASSWORD: rootpwd
+        MYSQL_DATABASE: prestacoop
+      ports:
+        - 3306:3306
+    adminer:
+      image: adminer:latest
+      hostname: ${KAFKA_HOST_NAME}
+      environment:
+        ADMINER_DEFAULT_SERVER: mysql_db
+      ports:
+        - 8080:8080
+    mongo:
+        image: mongo:latest
+        hostname: ${KAFKA_HOST_NAME}
+        restart: always
+        #environment:
+            #MONGO_INITDB_DATABASE: alertdb
+            #MONGO_INITDB_ROOT_USERNAME: root
+            #MONGO_INITDB_ROOT_PASSWORD: rootpwd
+            #MONGO_INITDB_DATABASE: alertdb
+            #${MONGO_INITDB_DATABASE}
+            #${MONGO_INITDB_ROOT_USERNAME}
+            #${MONGO_INITDB_ROOT_PASSWORD}
+            #MONGO_DATABASE: ${MONGO_INITDB_DATABASE}
+            #MONGO_NON_ROOT_USERNAME: LT.User1
+            #MONGO_NON_ROOT_PASSWORD: PoliceOffice
+            #MONGO_INITDB_ROOT_USERNAME: root
+            #MONGO_INITDB_ROOT_PASSWORD: example
+        #env_file:
+        #- .env # FIXME
+        volumes:
+        - ./alerter/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        - ./data:/data/db
+        ports:
+        - 27017-27019:27017-27019
+    mongo-express:
+        image: mongo-express
+        restart: always
+        hostname: ${KAFKA_HOST_NAME}
+        ports:
+        - 8081:8081
+        environment:
+            ME_CONFIG_MONGODB_SERVER: ${KAFKA_HOST_NAME}
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: example
     alerter:
        build: ./alerter
        ports:
@@ -11,17 +70,28 @@ services:
        depends_on:
        - "kafka"
        restart: always # will sometimes fail, if kafka takes too long
+    alertbackend:
+       build: ./alertbackend
+       ports:
+       - "3000:3000"
+       env_file:
+       - ./alertbackend/.env
+       volumes:
+       - ./alertbackend:/app
+       depends_on:
+       - "kafka"
+       restart: always
     zookeeper:
        image: wurstmeister/zookeeper
-       ports: 
+       ports:
         - "2181"
     kafka:
         image: wurstmeister/kafka
         ports:
             - "9092:9092"
         environment:
-            KAFKA_ADVERTISED_HOST_NAME: localhost
+            KAFKA_ADVERTISED_HOST_NAME: ${KAFKA_HOST_NAME}
             KAFKA_CREATE_TOPICS: "general:1:1,alert:1:1"
             KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        depends_on: 
+        depends_on:
             - zookeeper
