@@ -34,7 +34,7 @@ const sendNotif = () => {
 }
 
 const addAlert = (msg) => {
-    querydb(`INSERT INTO drone_messages (Issue_Date,Plate_ID,Violation_Code,Vehicle_Body_Type,Street_Code1,Street_Code2,Street_Code3,Violation_Time,Violation_County,Registration_State) VALUES ('${msg.Issue_Date}','${msg.Plate_ID}','${msg.Violation_Code}','${msg.Vehicle_Body_Type}','${msg.Street_Code1}','${msg.Street_Code2}','${msg.Street_Code3}','${msg.Violation_Time}','${msg.Violation_County}','${msg.Registration_State}')`).catch(err => {
+    querydb(`INSERT INTO drone_messages (Drone_ID,Issue_Date,Plate_ID,Violation_Code,Vehicle_Body_Type,Street_Code1,Street_Code2,Street_Code3,Violation_Time,Violation_County,Registration_State,Vehicle_Color,Vehicle_Maker) VALUES ('${msg.Drone_ID}','${msg.Issue_Date}','${msg.Plate_ID}','${msg.Violation_Code}','${msg.Vehicle_Body_Type}','${msg.Street_Code1}','${msg.Street_Code2}','${msg.Street_Code3}','${msg.Violation_Time}','${msg.Violation_County}','${msg.Registration_State}','${msg.Vehicle_Color}','${msg.Vehicle_Maker}')`).catch(err => {
         console.error(err);
     }).then(results => {
         sendNotif();
